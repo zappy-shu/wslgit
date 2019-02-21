@@ -24,7 +24,7 @@ fn get_drive_letter(pc: &PrefixComponent) -> Option<String> {
 
 fn get_prefix_for_drive(drive: &str) -> String {
     // todo - lookup mount points
-    format!("/mnt/{}", drive)
+    format!("/{}", drive)
 }
 
 fn translate_path_to_unix(argument: String) -> String {
@@ -73,7 +73,7 @@ fn translate_path_to_unix(argument: String) -> String {
 fn translate_path_to_win(line: &[u8]) -> Cow<[u8]> {
     lazy_static! {
         static ref WSLPATH_RE: Regex =
-            Regex::new(r"(?m-u)/mnt/(?P<drive>[A-Za-z])(?P<path>/\S*)")
+            Regex::new(r"(?m-u)/(?P<drive>[A-Za-z])(?P<path>/\S*)")
                 .expect("Failed to compile WSLPATH regex");
     }
     WSLPATH_RE.replace_all(line, &b"${drive}:${path}"[..])
