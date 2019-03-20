@@ -24,7 +24,7 @@ fn get_drive_letter(pc: &PrefixComponent) -> Option<String> {
 
 fn get_prefix_for_drive(drive: &str) -> String {
     // todo - lookup mount points
-    format!("/mnt/{}", drive)
+    format!("/{}", drive)
 }
 
 fn translate_path_to_unix(argument: String) -> String {
@@ -73,7 +73,7 @@ fn translate_path_to_unix(argument: String) -> String {
 fn translate_path_to_win(line: &[u8]) -> Cow<[u8]> {
     lazy_static! {
         static ref WSLPATH_RE: Regex =
-            Regex::new(r"(?m-u)/mnt/(?P<drive>[A-Za-z])(?P<path>/\S*)")
+            Regex::new(r"(?m-u)/(?P<drive>[A-Za-z])(?P<path>/\S*)")
                 .expect("Failed to compile WSLPATH regex");
     }
     WSLPATH_RE.replace_all(line, &b"${drive}:${path}"[..])
@@ -192,21 +192,21 @@ fn main() {
 fn win_to_unix_path_trans() {
     assert_eq!(
         translate_path_to_unix("d:\\test\\file.txt".to_string()),
-        "/mnt/d/test/file.txt");
+        "/d/test/file.txt");
     assert_eq!(
         translate_path_to_unix("C:\\Users\\test\\a space.txt".to_string()),
-        "/mnt/c/Users/test/a space.txt");
+        "/c/Users/test/a space.txt");
 }
 
 #[test]
 fn unix_to_win_path_trans() {
     assert_eq!(
-        &*translate_path_to_win(b"/mnt/d/some path/a file.md"),
+        &*translate_path_to_win(b"/d/some path/a file.md"),
         b"d:/some path/a file.md");
     assert_eq!(
-        &*translate_path_to_win(b"origin  /mnt/c/path/ (fetch)"),
+        &*translate_path_to_win(b"origin  /c/path/ (fetch)"),
         b"origin  c:/path/ (fetch)");
-    let multiline = b"mirror  /mnt/c/other/ (fetch)\nmirror  /mnt/c/other/ (push)\n";
+    let multiline = b"mirror  /c/other/ (fetch)\nmirror  /c/other/ (push)\n";
     let multiline_result = b"mirror  c:/other/ (fetch)\nmirror  c:/other/ (push)\n";
     assert_eq!(
         &*translate_path_to_win(&multiline[..]),
@@ -216,8 +216,8 @@ fn unix_to_win_path_trans() {
 #[test]
 fn no_path_translation() {
     assert_eq!(
-        &*translate_path_to_win(b"/mnt/other/file.sh"),
-        b"/mnt/other/file.sh");
+        &*translate_path_to_win(b"/other/file.sh"),
+        b"/other/file.sh");
 }
 
 #[test]
@@ -231,5 +231,5 @@ fn relative_path_translation() {
 fn long_argument_path_translation() {
     assert_eq!(
         translate_path_to_unix("--file=C:\\some\\path.txt".to_owned()),
-        "--file=/mnt/c/some/path.txt");
+        "--file=/c/some/path.txt");
 }
